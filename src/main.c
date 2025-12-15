@@ -18,7 +18,7 @@ void show_pointer_position() {
 int main() {
   gm_init(500, 500, "floating lineup");
   gm_bg_color(GM_BLACK);
-  gmBody play_button = gm_circle_body(0, 0.9, 0.9, 0.08);
+  gmBody play_button = gm_circle_body(0, 0.9, 0.9, 0.05);
   int autoplay = 0;
 
   do {
@@ -42,6 +42,7 @@ int main() {
     }
     find_selected_point();
 
+    gm_draw_text(0.78, 0.9, "auto", "", 0.08, GM_WHITE);
     gm_draw_circle_body(&play_button, autoplay ? GM_GREEN : GM_RED);
 
     show_pointer_position();

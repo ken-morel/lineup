@@ -20,8 +20,8 @@ void find_loss() {
   }
 }
 void plot_line() {
-  double start_x = -1, start_y = find_y(start_x);
-  double end_x = 1, end_y = find_y(end_x);
+  double start_x = -100, start_y = find_y(start_x);
+  double end_x = 100, end_y = find_y(end_x);
   find_loss();
   int loss_on_256 = log(loss) + 100;
   gmColor color = gm_set_red(GM_YELLOW, loss_on_256);
