@@ -1,18 +1,10 @@
-#include "color.h"
+
+#include "body.h"
+#include "draw.h"
 #include "gapi.h"
-#include "utils.h"
-#include <stdlib.h>
-#define MAX_USER_POINTS 50
-#include "user_points.h"
-
 #include "line.h"
-
-void setup() {
-  gm_init(500, 500, "floating lineup");
-  gm_bg_color(GM_BLACK);
-
-  srand(1);
-}
+#include "user_points.h"
+#include "utils.h"
 
 void show_text_messages() {
   char txt[50];
@@ -20,28 +12,37 @@ void show_text_messages() {
   gm_draw_text(0, 0.9, txt, "", 0.1, GM_WHITE);
 }
 void show_pointer_position() {
-  show_position(gm_mouse.position.x, gm_mouse.position.y, GM_GRAY);
+  if (selected_point == -1)
+    show_position(gm_mouse.position.x, gm_mouse.position.y, GM_GRAY);
 }
 int main() {
-  setup();
-  do {
+  gm_init(500, 500, "floating lineup");
+  gm_bg_color(GM_BLACK);
+  gmBody play_button = gm_circle_body(0, 0.9, 0.9, 0.08);
+  int autoplay = 0;
 
-    // gm_draw_line(-1, -1, 1, 1, 0.1, GM_BLUE);
-    if (gm_mouse.pressed) {
-      if (gm_key('a')) {
+  do {
+    if (gm_mouse.pressed && selected_point == -1) {
+
+      if (gm_body_contains(&play_button, gm_mouse.position.x,
+                           gm_mouse.position.y))
+        autoplay = !autoplay;
+
+      else
         add_user_point(gm_mouse.position.x, gm_mouse.position.y);
-      } else if (gm_key('m')) {
-        place_selected_point();
-      } else if (gm_mouse.down) {
-        find_selected_point();
-      }
+    } else if (gm_mouse.down) {
+      if (selected_point >= 0)
+        user_points[selected_point] = gm_mouse.position;
     } else {
       if (gm_key('d')) {
         delete_selected_point();
-      } else if (gm_key(' ')) {
+      } else if (gm_key(' ') || autoplay) {
         one_epoch();
       }
     }
+    find_selected_point();
+
+    gm_draw_circle_body(&play_button, autoplay ? GM_GREEN : GM_RED);
 
     show_pointer_position();
     show_selected_point_position();

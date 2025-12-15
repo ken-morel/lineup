@@ -1,11 +1,10 @@
 #pragma once
 
-#include "color.h"
-#include "utils.h"
 #ifndef MAX_USER_POINTS
 #define MAX_USER_POINTS 50
 #endif
 
+#include "utils.h"
 #include <gama.h>
 
 gmPos user_points[MAX_USER_POINTS];
@@ -44,11 +43,6 @@ void find_selected_point() {
     }
   }
   unselect_point();
-}
-void place_selected_point() {
-  if (selected_point < 0)
-    return;
-  user_points[selected_point] = gm_mouse.position;
 }
 
 void delete_selected_point() {
