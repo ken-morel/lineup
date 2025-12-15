@@ -1,7 +1,4 @@
 
-#include "body.h"
-#include "draw.h"
-#include "gapi.h"
 #include "line.h"
 #include "user_points.h"
 #include "utils.h"
@@ -23,22 +20,20 @@ int main() {
 
   do {
     if (gm_mouse.pressed && selected_point == -1) {
-
       if (gm_body_contains(&play_button, gm_mouse.position.x,
                            gm_mouse.position.y))
         autoplay = !autoplay;
-
       else
         add_user_point(gm_mouse.position.x, gm_mouse.position.y);
     } else if (gm_mouse.down) {
       if (selected_point >= 0)
         user_points[selected_point] = gm_mouse.position;
-    } else {
-      if (gm_key('d')) {
-        delete_selected_point();
-      } else if (gm_key(' ') || autoplay) {
-        one_epoch();
-      }
+    } else if (gm_key('d') || gm_key_pressed('s', 'd')) {
+      delete_selected_point();
+    }
+
+    if (gm_key(' ') || autoplay) {
+      one_epoch();
     }
     find_selected_point();
 

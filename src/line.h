@@ -3,7 +3,7 @@
 #include "user_points.h"
 #include <gama.h>
 
-double gradient = 1, intercept = 0;
+double gradient = 0, intercept = 0;
 
 double loss = 0;
 double learn_rate = 0.01;
@@ -25,7 +25,7 @@ void plot_line() {
   find_loss();
   int loss_on_256 = log(loss) + 100;
   gmColor color = gm_set_red(GM_YELLOW, loss_on_256);
-  gm_draw_line(start_x, start_y, end_x, end_y, 0.02, color);
+  gm_draw_line(start_x, start_y, end_x, end_y, 0.01, color);
 }
 
 void one_epoch() {
