@@ -1,5 +1,7 @@
 #pragma once
 
+#include "color.h"
+#include "utils.h"
 #ifndef MAX_USER_POINTS
 #define MAX_USER_POINTS 50
 #endif
@@ -56,4 +58,11 @@ void delete_selected_point() {
     user_points[i] = user_points[i + 1];
   n_user_points--;
   unselect_point();
+}
+
+void show_selected_point_position() {
+  if (selected_point < 0)
+    return;
+  double x = user_points[selected_point].x, y = user_points[selected_point].y;
+  show_position(x, y, GM_GREENYELLOW);
 }

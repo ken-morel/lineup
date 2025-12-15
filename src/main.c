@@ -1,3 +1,6 @@
+#include "color.h"
+#include "gapi.h"
+#include "utils.h"
 #include <stdlib.h>
 #define MAX_USER_POINTS 50
 #include "user_points.h"
@@ -15,6 +18,9 @@ void show_text_messages() {
   char txt[50];
   sprintf(txt, "loss: %.4lf", loss);
   gm_draw_text(0, 0.9, txt, "", 0.1, GM_WHITE);
+}
+void show_pointer_position() {
+  show_position(gm_mouse.position.x, gm_mouse.position.y, GM_GRAY);
 }
 int main() {
   setup();
@@ -37,6 +43,8 @@ int main() {
       }
     }
 
+    show_pointer_position();
+    show_selected_point_position();
     show_text_messages();
     plot_user_points();
     plot_line();
