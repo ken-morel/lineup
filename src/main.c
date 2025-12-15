@@ -16,7 +16,7 @@ int main() {
   gm_init(500, 500, "floating lineup");
   gm_bg_color(GM_BLACK);
   gmBody play_button = gm_circle_body(0, 0.9, 0.9, 0.05);
-  int autoplay = 0;
+  int autoplay = 1;
 
   do {
     if (gm_mouse.pressed && selected_point == -1) {
