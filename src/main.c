@@ -1,4 +1,5 @@
 
+#include "gridlines.h"
 #include "line.h"
 #include "user_points.h"
 #include "utils.h"
@@ -13,7 +14,7 @@ void show_pointer_position() {
     show_position(gm_mouse.position.x, gm_mouse.position.y, GM_GRAY);
 }
 int main() {
-  gm_init(500, 500, "floating lineup");
+  gm_init(500, 500, "Lineup");
   gm_bg_color(GM_BLACK);
   gmBody play_button = gm_circle_body(0, 0.9, 0.9, 0.05);
   int autoplay = 1;
@@ -36,6 +37,8 @@ int main() {
       one_epoch();
     }
     find_selected_point();
+
+    draw_gridlines();
 
     gm_draw_text(0.78, 0.9, "auto", "", 0.08, GM_WHITE);
     gm_draw_circle_body(&play_button, autoplay ? GM_GREEN : GM_RED);
