@@ -6,7 +6,7 @@
 double gradient = 0, intercept = 0;
 
 double loss = 0;
-double learn_rate = 0.01;
+double learn_rate = 0.0;
 
 static inline double find_y(double x) { return (gradient * x) + intercept; }
 
@@ -23,7 +23,7 @@ void plot_line() {
   double start_x = -5, start_y = find_y(start_x);
   double end_x = 5, end_y = find_y(end_x);
   find_loss();
-  int loss_on_256 = log(loss) + 100;
+  int loss_on_256 = fmax(log(loss) + 4, 0) * 40;
   gmColor color = gm_set_red(GM_YELLOW, loss_on_256);
   gm_draw_line(start_x, start_y, end_x, end_y, 0.01, color);
 }

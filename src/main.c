@@ -1,4 +1,3 @@
-
 #include "gridlines.h"
 #include "line.h"
 #include "user_points.h"
@@ -8,6 +7,8 @@ void show_text_messages() {
   char txt[50];
   sprintf(txt, "loss: %.4lf", loss);
   gm_draw_text(0, 0.9, txt, "", 0.1, GM_WHITE);
+  sprintf(txt, "y = %.3lfx + %.3lf", gradient, intercept);
+  gm_draw_text(0, 0.8, txt, "", 0.1, GM_WHITE);
 }
 void show_pointer_position() {
   if (selected_point == -1)
@@ -36,11 +37,19 @@ int main() {
     if (gm_key(' ') || autoplay) {
       one_epoch();
     }
+    if (gm_key('a'))
+      autoplay = !autoplay;
+
+    if (gm_key('f'))
+      learn_rate = 0.1;
+    else
+      learn_rate = 0.01;
+
     find_selected_point();
 
     draw_gridlines();
 
-    gm_draw_text(0.78, 0.9, "auto", "", 0.08, GM_WHITE);
+    gm_draw_text(0.70, 0.9, "auto(a)", "", 0.08, GM_WHITE);
     gm_draw_circle_body(&play_button, autoplay ? GM_GREEN : GM_RED);
 
     show_pointer_position();

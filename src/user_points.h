@@ -11,14 +11,14 @@ gmPos user_points[MAX_USER_POINTS];
 size_t n_user_points = 0;
 int selected_point = -1;
 
-const double point_radius = 0.04;
+const double point_radius = 0.02;
 
 void plot_user_points() {
   for (size_t i = 0; i < n_user_points; i++) {
     double x = user_points[i].x, y = user_points[i].y;
-    double radius = gm_anim_sin(point_radius, 0.003, 1, (double)i / 5);
-    gmColor color = selected_point == i ? GM_ORANGE : GM_LIGHTBLUE;
-    gm_draw_circle(x, y, radius, gm_set_alpha(color, 100));
+    double radius = gm_anim_sin(point_radius, 0.001, 1, (double)i / 5);
+    gmColor color = selected_point == i ? GM_ORANGE : GM_REBECCAPURPLE;
+    gm_draw_circle(x, y, radius, gm_set_alpha(color, 200));
   }
 }
 
