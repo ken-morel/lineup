@@ -73,6 +73,8 @@ int main() {
       learn_scaled = 1;
 
     find_selected_point();
+    if (gm_key_pressed('s', 'x'))
+      gm_quit();
 
   } while (gm_yield());
   return 0;
