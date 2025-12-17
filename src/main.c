@@ -1,3 +1,4 @@
+#include "gama.h"
 #include "gridlines.h"
 #include "line.h"
 #include "user_points.h"
@@ -17,6 +18,7 @@ void show_pointer_position() {
 int main() {
   gm_init(500, 500, "Lineup");
   gm_bg_color(GM_BLACK);
+  gm_fullscreen(1);
   gmBody play_button = gm_circle_body(0, 0.9, 0.9, 0.05);
   int autoplay = 1;
 
@@ -41,9 +43,18 @@ int main() {
       autoplay = !autoplay;
 
     if (gm_key('f'))
-      learn_rate = 0.1;
+      learn_rate = 1;
     else
       learn_rate = 0.01;
+    const double move_units = 0.01;
+    if (gm_key('U'))
+      move_points(0, move_units);
+    else if (gm_key('D'))
+      move_points(0, -move_units);
+    else if (gm_key('L'))
+      move_points(-move_units, 0);
+    else if (gm_key('R'))
+      move_points(move_units, 0);
 
     find_selected_point();
 

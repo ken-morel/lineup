@@ -23,6 +23,8 @@
 #include "system.h"
 #include <stdio.h>
 
+void gm_fullscreen(int fullscreen) { gapi_fullscreen(fullscreen); }
+
 /**
  * @brief Initializes the Gama engine and opens a window.
  *

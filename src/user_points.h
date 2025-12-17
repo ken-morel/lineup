@@ -21,6 +21,12 @@ void plot_user_points() {
     gm_draw_circle(x, y, radius, gm_set_alpha(color, 200));
   }
 }
+void move_points(double x, double y) {
+  for (size_t i = 0; i < n_user_points; i++) {
+    user_points[i].x += x;
+    user_points[i].y += y;
+  }
+}
 
 void select_point(int id) { selected_point = id; }
 void unselect_point() { selected_point = -1; }
