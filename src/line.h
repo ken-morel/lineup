@@ -6,7 +6,7 @@
 double gradient = 0, intercept = 0;
 
 double loss = 0;
-double learn_rate = 0.0;
+double learn_rate = 0.01;
 
 static inline double find_y(double x) { return (gradient * x) + intercept; }
 

@@ -21,10 +21,10 @@ void plot_user_points() {
     gm_draw_circle(x, y, radius, gm_set_alpha(color, 200));
   }
 }
-void move_points(double x, double y) {
+void move_points(gmPos pos) {
   for (size_t i = 0; i < n_user_points; i++) {
-    user_points[i].x += x;
-    user_points[i].y += y;
+    user_points[i].x += pos.x / 100;
+    user_points[i].y += pos.y / 100;
   }
 }
 
