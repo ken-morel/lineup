@@ -40,13 +40,13 @@ int main() {
     plot_user_points();
     plot_line();
 
-    int controls_hovered = gm_frame(1, 0.77, 0.45, 0.32);
+    int controls_hovered = gm_frame(1, 0.75, 0.45, 0.36);
     if (!controls_hovered)
       show_pointer_position();
-    gm_switch_anim(0.9, 0.85, 0.18, 0.09, &autoplay, &swanim);
+    gmw_switch_anim(0.9, 0.85, 0.18, 0.09, &autoplay, &swanim);
     gm_draw_text(1.1, 0.85, "auto", "", 0.1, GM_WHITE);
-    gm_scale_anim(1, 0.75, 0.4, 0.02, &learn_scaled, &learn_anim);
-    if (gm_button(1, 0.67, 0.2, 0.08, "step", 0.1) && gm_mouse.down)
+    gmw_scale_anim(1, 0.75, 0.4, 0.02, &learn_scaled, &learn_anim);
+    if (gmw_button(1, 0.65, 0.2, 0.08, "step", 0.1) && gm_mouse.down)
       one_epoch();
     learn_rate = pow(learn_scaled, 4);
 
