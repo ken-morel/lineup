@@ -18,7 +18,7 @@ void show_pointer_position() {
     show_position(gm_mouse.position.x, gm_mouse.position.y, GM_GRAY);
 }
 int main() {
-  gm_init(700, 500, "Lineup");
+  gm_init(800, 500, "Lineup");
   gm_background(GM_BLACK);
   gm_fullscreen(1);
   gm_show_fps(1);
@@ -32,7 +32,6 @@ int main() {
   double learn_anim = learn_scaled;
 
   do {
-
     draw_gridlines();
 
     show_selected_point_position();
@@ -40,7 +39,7 @@ int main() {
     plot_user_points();
     plot_line();
 
-    int controls_hovered = gm_frame(1, 0.75, 0.45, 0.36);
+    int controls_hovered = gmw_frame(1, 0.75, 0.45, 0.36);
     if (!controls_hovered)
       show_pointer_position();
     gmw_switch_anim(0.9, 0.85, 0.18, 0.09, &autoplay, &swanim);
@@ -50,7 +49,7 @@ int main() {
       one_epoch();
     learn_rate = pow(learn_scaled, 4);
 
-    int joy_hovered = gm_joystick_anim(-1, 0.78, 0.2, &joy, &joyv);
+    int joy_hovered = gm_joystick_anim(-1.18, 0.78, 0.2, &joy, &joyv);
 
     if (gm_mouse.pressed && selected_point == -1) {
       if (!controls_hovered && !joy_hovered)
@@ -70,7 +69,7 @@ int main() {
     move_points(joy);
 
     if (gm_key('f'))
-      learn_scaled = 1;
+      learn_scaled += 0.01;
 
     find_selected_point();
     if (gm_key_pressed('s', 'x'))
