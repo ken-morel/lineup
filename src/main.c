@@ -1,10 +1,11 @@
-#include "gama.h"
-#include "gapi.h"
+
 #include "gridlines.h"
 #include "line.h"
 #include "user_points.h"
 #include "utils.h"
+#include <gama.h>
 #include <math.h>
+#include <threads.h>
 
 void show_text_messages() {
   char txt[50];
@@ -22,6 +23,11 @@ int main() {
   gm_background(GM_BLACK);
   gm_fullscreen(1);
   gm_show_fps(1);
+  { // show the logo
+    gm_logo(0, 0, 2);
+    gm_yield();
+    gm_sleep(1000);
+  }
   int autoplay = 1;
 
   gmPos joy = {0, 0}, joyv = joy;
@@ -33,7 +39,6 @@ int main() {
 
   do {
     draw_gridlines();
-
     show_selected_point_position();
     show_text_messages();
     plot_user_points();
@@ -69,7 +74,7 @@ int main() {
     move_points(joy);
 
     if (gm_key('f'))
-      learn_scaled += 0.01;
+      learn_scaled += gm_key('S') ? -0.01 : 0.01;
 
     find_selected_point();
     if (gm_key_pressed('s', 'x'))
