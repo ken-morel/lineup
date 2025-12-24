@@ -1,0 +1,11 @@
+
+name = "lineup"
+description = "Graphical, animated linear regression tool built with gama"
+version = "0.1.0"
+author = "gama"
+
+[gama]
+
+version = "0.1.0"
+compiler = "/usr/bin/clang"
+		
