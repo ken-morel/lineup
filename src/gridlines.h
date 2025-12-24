@@ -1,5 +1,6 @@
 #include "color.h"
 #include <gama.h>
+#include <stdio.h>
 
 void draw_gridlines() {
   char label[5];

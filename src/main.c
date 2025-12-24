@@ -1,11 +1,8 @@
-
 #include "gridlines.h"
 #include "line.h"
 #include "user_points.h"
 #include "utils.h"
 #include <gama.h>
-#include <math.h>
-#include <threads.h>
 
 void show_text_messages() {
   char txt[50];
@@ -18,6 +15,7 @@ void show_pointer_position() {
   if (selected_point == -1)
     show_position(gm_mouse.position.x, gm_mouse.position.y, GM_GRAY);
 }
+
 int main() {
   gm_init(800, 500, "Lineup");
   gm_background(GM_BLACK);

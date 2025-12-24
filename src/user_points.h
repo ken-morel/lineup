@@ -33,7 +33,7 @@ void unselect_point() { selected_point = -1; }
 
 void add_user_point(double x, double y) {
   if (n_user_points + 1 >= MAX_USER_POINTS) {
-    fprintf(stderr, "Can not add any more points");
+    gm_log("Can not add any more points");
     return;
   }
   user_points[n_user_points].x = x;

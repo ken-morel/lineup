@@ -20,9 +20,33 @@
 #include "key.h"
 #include "physics.h"
 #include "sprite.h"
+#include "stdio.h"
 #include "system.h"
 #include "widgets.h"
-#include <stdio.h>
+
+int main(void);
+
+#ifdef GM_SETUP
+
+__attribute__((export_name("gama_mode"))) int gama_mode() { return 2; }
+
+int setup();
+
+__attribute__((export_name("gama_setup"))) int gama_setup() {
+  setup();
+  // ama
+}
+__attribute__((export_name("gama_loop"))) int gama_loop() {
+  return main();
+  // ama
+}
+
+#else
+__attribute__((export_name("gama_mode"))) int gama_mode() { return 1; }
+
+__attribute__((export_name("gama_run"))) int gama_run() { return main(); }
+
+#endif
 
 /**
  * @brief Puts the window in fullscreen.
@@ -85,6 +109,7 @@ void _gm_fps() {
     gm_draw_text(0.9, -0.9, fps_text, "", 0.1, GM_WHITE);
   }
 }
+#ifndef GM_SETUP
 
 /**
  * @brief Processes events, updates input state, and prepares for the next
@@ -113,6 +138,7 @@ static inline int gm_yield() {
   } else
     return 0;
 }
+#endif
 
 /**
  * @brief Closes the window and terminates the Gama engine.
@@ -156,11 +182,8 @@ void gm_init(int width, int height, const char *title) {
              "Error starting gama, initialization exited with non zero code %d",
              code);
     gapi_log(msg);
-    printf("%s", msg);
   }
   gm_background(GM_BLACK);
-  gm_logo(0, 0, 2);
-  gm_yield();
 }
 
 /**
@@ -170,10 +193,13 @@ void gm_init(int width, int height, const char *title) {
  */
 void gm_sleep(int milliseconds);
 
+#ifdef __ZIG_CC__
+void gm_sleep(int m) {};
+#else
 #ifdef _WIN32
 #include <windows.h>
 void gm_sleep(int milliseconds) { Sleep(milliseconds); }
-#else
 #include <unistd.h>
 void gm_sleep(int milliseconds) { usleep(milliseconds * 1000); }
+#endif
 #endif
