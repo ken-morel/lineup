@@ -69,15 +69,11 @@ extern int32_t
 #endif
     gapi_init(const int32_t width, const int32_t height, const char *title);
 
-#ifndef GM_SETUP
-
 extern int32_t
 #ifdef __ZIG_CC__
     __attribute__((import_module("gapi"), import_name("yield")))
 #endif
     gapi_yield(double *dt); // Changed to int32_t return type
-
-#endif
 
 extern void
 #ifdef __ZIG_CC__

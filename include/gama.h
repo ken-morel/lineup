@@ -24,24 +24,29 @@
 #include "system.h"
 #include "widgets.h"
 
-int main(void);
+int _gm_loop();
 
 #ifdef GM_SETUP
-
 __attribute__((export_name("gama_mode"))) int gama_mode() { return 2; }
 
 int setup();
+int loop();
 
 __attribute__((export_name("gama_setup"))) int gama_setup() {
-  setup();
+  return setup();
   // ama
 }
 __attribute__((export_name("gama_loop"))) int gama_loop() {
-  return main();
-  // ama
+  if (_gm_loop()) {
+
+    return loop();
+  } else
+    return 0;
 }
 
 #else
+int main(void);
+
 __attribute__((export_name("gama_mode"))) int gama_mode() { return 1; }
 
 __attribute__((export_name("gama_run"))) int gama_run() { return main(); }
@@ -126,19 +131,19 @@ void _gm_fps() {
  *   // Your game logic and rendering here
  * }
  */
-static inline int gm_yield() {
-  if (gapi_yield(&_gm_dt)) {
-    _gm_t += _gm_dt;
-    gapi_get_mouse_move(&gm_mouse.movement.x, &gm_mouse.movement.y);
-    gapi_mouse_get(&gm_mouse.position.x, &gm_mouse.position.y);
-    gm_mouse.down = gapi_mouse_down();
-    gm_mouse.pressed = gapi_mouse_pressed();
-    _gm_fps();
-    return 1;
-  } else
-    return 0;
-}
+static inline int gm_yield() { return _gm_loop(); }
 #endif
+
+int _gm_loop() {
+  int ret = gapi_yield(&_gm_dt);
+  _gm_t += _gm_dt;
+  gapi_mouse_get(&gm_mouse.position.x, &gm_mouse.position.y);
+  gapi_get_mouse_move(&gm_mouse.movement.x, &gm_mouse.movement.y);
+  gm_mouse.down = gapi_mouse_down();
+  gm_mouse.pressed = gapi_mouse_pressed();
+  _gm_fps();
+  return ret;
+}
 
 /**
  * @brief Closes the window and terminates the Gama engine.

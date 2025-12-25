@@ -2,8 +2,9 @@
 #include <gama.h>
 #include <stdio.h>
 
+char label[5] = {0};
+
 void draw_gridlines() {
-  char label[5];
   gmColor transparent_white = gm_set_alpha(GM_WHITE, 100);
   gmColor more_transparent_white = gm_set_alpha(GM_WHITESMOKE, 20);
   // x axis

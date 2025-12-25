@@ -2,11 +2,44 @@
 <html>
 
 <head>
-  <title> my game</title>
+  <meta charset="utf-8" />
+
+  <link rel="icon" type="image/png" href="./icon.png" />
+  <link rel="icon" type="icon" href="./icon.png" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <!-- <meta property="og:url" content="https://gama.rbs.cm/" /> -->
+  <meta property="og:title" content="lineup" />
+  <meta property="og:description" content="Graphical, animated linear regression tool built with gama" />
+  <meta property="og:image" content="./icon.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <!-- <meta property="twitter:url" content="https://gama.rbs.cm/" /> -->
+  <meta property="twitter:title" content="lineup" />
+  <meta property="twitter:description" content="Graphical, animated linear regression tool built with gama" />
+  <meta property="twitter:image" content="./icon.png" />
+
+  <title>lineup 0.1.0</title>
 </head>
 
 <body>
-  <script type="module" src="./script.js">
+  <canvas id="canvas"></canvas>
+
+  <script type="module">
+    import {GamaInstance} from "./gama.js";
+
+    const instance = new GamaInstance();
+
+    instance.bind(document.getElementById("canvas"));
+
+    instance.setup("./lineup.wasm").then(() => {
+      console.info("starting gama instance");
+      instance.start();
+    });
   </script>
 </body>
 
