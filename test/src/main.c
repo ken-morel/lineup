@@ -20,5 +20,7 @@ int loop() {
   gm_draw_text(0, 0, "Hello world", "", 0.5, GM_CYAN);
 
   gm_draw_rect_body(&rect, GM_RED);
+
+  gm_key('U');
   return 0;
 }

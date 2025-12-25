@@ -17,7 +17,10 @@ let p = {
     x: 0, y: 0, mx: 0, my: 0,
     down: false,
     pressed: false,
-  }
+  },
+  keyboard: {
+    down: [],
+  },
 };
 
 // Create a proxy to catch any missing WASI functions
@@ -104,14 +107,8 @@ const gapi = {
     setDoublePtr(y_ptr, p.mouse.y);
     return 0;
   },
-  mouse_down: () => {
-    return p.mouse.down ? 1 : 0;
-  },
-  mouse_pressed: () => {
-    const ret = p.mouse.pressed ? 1 : 0;
-    p.mouse.pressed = false;
-    return ret;
-  },
+  mouse_down: () => p.mouse.down ? 1 : 0,
+  mouse_pressed: () => p.mouse.pressed ? 1 : 0,
   yield: (dt_ptr) => {
     const now = Date.now();
     const dt = (now - p.last_t) / 1000;
@@ -131,8 +128,11 @@ const gapi = {
       full: full == 1,
     });
   },
-  runs: () => p.running,
-  key_pressed: (t, k) => { }
+  runs: () => p.running ? 1 : 0,
+  key_pressed: (t, k) => {
+    return p.keyboard.down.includes(String.fromCodePoint(t, k)) ? 1 : 0;
+  },
+  wait_queue: () => { }
 };
 
 function takeString(ptr) {
@@ -184,6 +184,8 @@ self.onmessage = function(event) {
       p.instance.exports.gama_loop();
       postQueue();
       self.postMessage(null);
+      p.keyboard.down = [];
+      p.mouse.pressed = false;
     } else {
       if (event.data.type == 'event/mousemove') {
         p.mouse.x = event.data.position[0];
@@ -196,6 +198,10 @@ self.onmessage = function(event) {
       } else if (event.data.type == 'event/mouseup') {
         p.mouse.down = false;
 
+      } else if (event.data.type == 'event/keydown') {
+        p.keyboard.down.push(event.data.key);
+      } else if (event.data.type == 'event/keyup') {
+        p.keyboard.down = p.keyboard.down.filter(k => k != event.data.key);
       }
     }
   } else {

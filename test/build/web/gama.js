@@ -1,3 +1,5 @@
+import getKey from "./keys.js";
+
 export class GamaInstance {
   constructor() {
     this.contexts = [];
@@ -20,6 +22,18 @@ export class GamaInstance {
     canvas.addEventListener('mouseup', e => {
       this.worker.postMessage({
         type: 'event/mouseup',
+      });
+    });
+    canvas.addEventListener('keydown', e => {
+      this.worker.postMessage({
+        type: 'event/keydown',
+        key: getKey(e.key),
+      });
+    });
+    canvas.addEventListener('keyup', e => {
+      this.worker.postMessage({
+        type: 'event/keyup',
+        key: getKey(e.key),
       });
     });
   }
