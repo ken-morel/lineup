@@ -1,5 +1,6 @@
-#include "color.h"
 #define GM_SETUP
+#define GM_MALLOC
+#define GM_MATH
 
 #include "gridlines.h"
 #include "line.h"
@@ -7,9 +8,8 @@
 #include "utils.h"
 #include <gama.h>
 
-char txt[50] = {0};
-
 void show_text_messages() {
+  char txt[50] = {0};
   sprintf(txt, "loss: %.4lf", loss);
   gm_draw_text(0, 0.9, txt, "", 0.1, GM_WHITE);
   sprintf(txt, "y = %.3lfx + %.3lf", gradient, intercept);
@@ -30,7 +30,7 @@ double learn_scaled, learn_anim;
 int setup() {
   gm_init(800, 500, "Lineup");
   gm_background(0x222222FF);
-  // gm_fullscreen(1);
+  gm_fullscreen(1);
   gm_show_fps(1);
 
   autoplay = 1;
@@ -60,14 +60,16 @@ int loop() {
     one_epoch();
   learn_rate = pow(learn_scaled, 4);
 
+  find_selected_point();
+
   int joy_hovered = gm_joystick_anim(-1.18, 0.78, 0.2, &joy, &joyv);
-  if (gm_mouse.pressed && selected_point == -1) {
+  if (gm_mouse.clicked && selected_point == -1) {
     if (!controls_hovered && !joy_hovered)
       add_user_point(gm_mouse.position.x, gm_mouse.position.y);
   } else if (gm_mouse.down) {
     if (selected_point >= 0)
       user_points[selected_point] = gm_mouse.position;
-  } else if (gm_key('d') || gm_key_pressed('s', 'd')) {
+  } else if (gm_key('d') || gm_key_down('s', 'd')) {
     delete_selected_point();
   }
 
@@ -81,8 +83,7 @@ int loop() {
   if (gm_key('f'))
     learn_scaled += gm_key('S') ? -0.01 : 0.01;
 
-  find_selected_point();
-  if (gm_key_pressed('s', 'x'))
+  if (gm_key('E'))
     gm_quit();
   return 0;
 }

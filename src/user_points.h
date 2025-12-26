@@ -11,7 +11,7 @@ gmPos user_points[MAX_USER_POINTS];
 size_t n_user_points = 0;
 int selected_point = -1;
 
-const double point_radius = 0.02;
+const double point_radius = 0.04;
 
 void plot_user_points() {
   for (size_t i = 0; i < n_user_points; i++) {
@@ -42,6 +42,11 @@ void add_user_point(double x, double y) {
 }
 
 void find_selected_point() {
+  if (selected_point != -1 && selected_point < n_user_points)
+    if (gm_pos_distance(gm_mouse.position, user_points[selected_point]) <
+        point_radius * 2)
+      return;
+
   for (size_t i = 0; i < n_user_points; i++) {
     if (gm_pos_distance(gm_mouse.position, user_points[i]) < point_radius) {
       select_point(i);

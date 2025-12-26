@@ -1,12 +1,10 @@
-#include "color.h"
 #include <gama.h>
 #include <stdio.h>
 
-char label[5] = {0};
-
 void draw_gridlines() {
-  gmColor transparent_white = gm_set_alpha(GM_WHITE, 100);
-  gmColor more_transparent_white = gm_set_alpha(GM_WHITESMOKE, 20);
+  char label[5] = {0};
+  gmColor transparent_white = 0xFFFFFF99;
+  gmColor more_transparent_white = 0xAAAAAA44;
   // x axis
   gm_draw_line(-5, 0, 5, 0, 0.005, transparent_white);
   for (double x = -5; x <= 5; x += 0.1) {

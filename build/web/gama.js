@@ -1,4 +1,4 @@
-export class GamaInstance {
+export default class GamaInstance {
   constructor() {
     this.contexts = [];
     this.window = {
@@ -7,25 +7,55 @@ export class GamaInstance {
       side: 500,
     };
     this.initialized = false;
+    this.maximized = false;
   }
   resize(width, height) {
-    ctx.canvas.width = width;
-    ctx.canvas.height = width;
-    for (var context in this.contexts) {
+    this.ctx.canvas.width = width;
+    this.ctx.canvas.height = height;
+    for (var context of this.contexts) {
       context.canvas.width = width;
-      context.canvas.height = width;
+      context.canvas.height = height;
     }
     this.window.side = Math.min(width, height);
     this.window.x = (width - this.window.side) / 2;
     this.window.y = (height - this.window.side) / 2;
   }
+  maximize() {
+    for (const ctx of this.contexts) {
+      const resized = (e) => {
+        if (!this.maximized) return;
+        const rect = ctx.canvas.getBoundingClientRect();
+        this.resize(rect.width, rect.height);
+      };
+      try {
+        window.addEventListener('resize', resized);
+      } catch (e) { }
+      ctx.canvas.addEventListener('resize', resized);
+      resized();
+    }
+  }
+  bindKeyboard(elt) {
+    elt.addEventListener('keydown', e => {
+      console.log(getKey(e.key));
+      this.worker.postMessage({
+        type: 'event/keydown',
+        key: getKey(e.key),
+      });
+    });
+    elt.addEventListener('keyup', e => {
+      this.worker.postMessage({
+        type: 'event/keyup',
+        key: getKey(e.key),
+      });
+    });
+  }
   bind(canvas) {
     this.contexts.push(canvas.getContext('2d'));
+    this.bindKeyboard(canvas);
     canvas.addEventListener('mousemove', e => {
       const r = e.target.getBoundingClientRect();
       this.worker.postMessage({
         type: 'event/mousemove',
-        movement: [this._js_one(e.movementX), this._js_one(e.movementY)],
         position: [...this._js_coord(e.clientX - r.x, e.clientY - r.y)]
       });
     });
@@ -39,18 +69,30 @@ export class GamaInstance {
         type: 'event/mouseup',
       });
     });
-    canvas.addEventListener('keydown', e => {
+    const touchpos = e => [...this._js_coord(e.touches[0].clientX, e.touches[0].clientY)];
+
+    canvas.addEventListener('touchmove', e => {
       this.worker.postMessage({
-        type: 'event/keydown',
-        key: getKey(e.key),
+        type: 'event/mousemove',
+        position: touchpos(e)
       });
     });
-    canvas.addEventListener('keyup', e => {
+    canvas.addEventListener('touchstart', e => {
       this.worker.postMessage({
-        type: 'event/keyup',
-        key: getKey(e.key),
+        type: 'event/mousemove',
+        position: touchpos(e)
+      });
+      this.worker.postMessage({
+        type: 'event/mousedown',
       });
     });
+    const handle = () => {
+      this.worker.postMessage({
+        type: 'event/mouseup',
+      });
+    };
+    canvas.addEventListener('touchcancel', handle);
+    canvas.addEventListener('touchend', handle);
   }
   async setup(wasmPath) {
     this.worker = new Worker(workerUrl, { type: 'module' });
@@ -79,22 +121,20 @@ export class GamaInstance {
     this.worker.terminate();
   }
   yield() {
-    if (this.initialized) requestAnimationFrame(() => {
-      for (const context of this.contexts) {
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        context.drawImage(this.ctx.canvas, 0, 0);
-      }
-      this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-      this.worker.postMessage(null);
-    }); else console.error("Cannot call GamaInstance.yield because gama instance is not initialized(gm_init not called)");
+    if (this.initialized) {
+      requestAnimationFrame(() => {
+        for (const context of this.contexts) {
+          context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+          context.drawImage(this.ctx.canvas, 0, 0);
+        }
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.worker.postMessage(null);
+      });
+    } else console.error("Cannot call GamaInstance.yield because gama instance is not initialized(gm_init not called)");
   }
-  handleWorkerMessage(event) {
+  handleWorkerCmd(d) {
     const ctx = this.ctx;
-    const d = event.data;
-    if (d == null) { // loop completed, save and wait for next frame
-      this.yield();
-      return;
-    }
+
     switch (d.type) {
       case 'initialize':
         this.initialized = true;
@@ -109,6 +149,7 @@ export class GamaInstance {
         try {
           document.querySelector('title').innerHTML = d.title;
         } catch (e) { }
+        if (this.maximized) this.maximize();
         break;
       case 'draw/line':
         var { start, stop, color, size } = d;
@@ -185,16 +226,24 @@ export class GamaInstance {
         break;
       case 'fullscreen':
         //TODO: find the currently viewed bound canvas
-        try {
-          if (d.full) {
-            this.contexts[0].canvas.requestFullscreen();
-          } else {
-            document.exitFullscreen();
-          }
-
-        } catch (e) { }
+        this.maximized = d.full == 1;
+        if (d.full && this.initialized) this.maximize();
         break;
     }
+  }
+  handleWorkerMessage(event) {
+    const d = event.data;
+    if (d == null) { // loop completed, save and wait for next frame
+      this.yield();
+      return;
+    } else if (d.type == 'multiple') {
+      for (const cmd of d.commands) {
+        this.handleWorkerCmd(cmd)
+      }
+    } else {
+      this.handleWorkerCmd(d);
+    }
+
   }
   applySize() {
     for (const context of this.contexts) {
@@ -242,7 +291,7 @@ export class GamaInstance {
   }
 
   _js_one(v) {
-    return (v * 2) / this.ctx.canvas.width;
+    return (v * 2) / this.window.side;
   }
 
   _c_rect(x, y, w, h) {
@@ -257,73 +306,114 @@ export class GamaInstance {
 
 
 const workerfn = () => {
-  const wasi_snapshot_preview1 = new Proxy({
-    proc_exit: (code) => console.log(`Process exited with code: ${code}`),
-    fd_write: (fd, iov, iovcnt, pnum) => {
-      const mem = p.instance.exports.memory.buffer, buf = new Uint8Array(mem);
-      let total = 0;
-      for (let i = 0; i < iovcnt; i++) {
-        const iovPtr = iov + i * 8;
-        const [ptr, len] = new Uint32Array(mem, iovPtr, 2);
-        console.log(new TextDecoder().decode(buf.subarray(ptr, ptr + len)));
-        total += len;
-      }
-      return (new Uint32Array(mem, pnum, 1)[0] = total, 0);
-    },
-    fd_read: () => 0,
-    fd_close: () => 0,
-    fd_fdstat_get: (fd, buf) => (new Uint8Array(p.instance.exports.memory.buffer).set([1, 0, 0, 0, 0, 0, 0, 0], buf), 0),
-    fd_seek: () => 28,
-    random_get: (buf, len) => (crypto.getRandomValues(new Uint8Array(p.instance.exports.memory.buffer, buf, len)), 0),
-    clock_time_get: (id, prec, ptr) => (new DataView(p.instance.exports.memory.buffer).setBigUint64(ptr, BigInt(Date.now()) * 1000000n, true), 0),
-    environ_get: () => 0,
-    environ_sizes_get: (c, s) => (new Uint32Array(p.instance.exports.memory.buffer, c, 2).fill(0), 0),
-    args_get: () => 0,
-    args_sizes_get: (c, s) => (new Uint32Array(p.instance.exports.memory.buffer, c, 2).fill(0), 0),
-    path_open: () => 1,
-    path_readlink: () => 1,
-    path_remove_directory: () => 1,
-    path_rename: () => 1,
-    path_symlink: () => 1,
-    path_unlink_file: () => 1,
-    fd_sync: () => 0,
-    fd_datasync: () => 0,
-    fd_allocate: () => 28,
-    fd_filestat_get: () => 28,
-    fd_filestat_set_size: () => 28,
-    fd_filestat_set_times: () => 28,
-    fd_prestat_get: () => 1,
-    fd_prestat_dir_name: () => 1,
-    poll_oneoff: () => 28,
-    sched_yield: () => 0,
-    sock_recv: () => 28,
-    sock_send: () => 28,
-    sock_shutdown: () => 28,
-    fd_pwrite: () => 28,
-    fd_fdstat_set_flags: () => 28,
-    path_create_directory: () => 28,
-    path_filestat_get: () => 28,
-    path_filestat_set_times: () => 28,
-    path_link: () => 28,
-    fd_advise: () => 28,
-    fd_pread: () => 28,
-    fd_readdir: () => 28,
-    fd_renumber: () => 28,
-    fd_tell: () => 28,
-    path_exists: () => 28,
-    fd_writev: () => 28,
-    fd_readv: () => 28
-  }, {
-    get: function(target, prop) {
-      if (prop in target)
-        return target[prop];
-      else
-        return function() {
-          console.warn(`Called unimplemented WASI function: ${prop}`);
-          return 28; // ENOTSUP: Not supported
-        };
+  class GamaWASI {
+    constructor(p) {
+      this.p = p; // Reference to your state object (must contain p.instance)
     }
-  });
+
+    get importObject() {
+      const s = this;
+      const mem = () => s.p.instance.exports.memory.buffer;
+      const view = () => new DataView(mem());
+
+      return {
+        // --- Process & Environment ---
+        proc_exit: (code) => console.log(`Process exited: ${code}`),
+        sched_yield: () => 0,
+        environ_sizes_get: (conf, bufsize) => {
+          view().setUint32(conf, 0, true);
+          view().setUint32(bufsize, 0, true);
+          return 0;
+        },
+        environ_get: (environ, environ_buf) => 0,
+        args_sizes_get: (argc, argv_buf_size) => {
+          view().setUint32(argc, 0, true);
+          view().setUint32(argv_buf_size, 0, true);
+          return 0;
+        },
+        args_get: (argv, argv_buf) => 0,
+
+        // --- Clock ---
+        clock_time_get: (id, precision, ptr) => {
+          const now = BigInt(Date.now()) * 1000000n;
+          view().setBigUint64(ptr, now, true);
+          return 0;
+        },
+
+        // --- Random ---
+        random_get: (buf, len) => {
+          crypto.getRandomValues(new Uint8Array(mem(), buf, len));
+          return 0;
+        },
+
+        // --- File Descriptors (The meat of the logic) ---
+        fd_write: (fd, iovs, iovs_len, nwritten) => {
+          let total = 0;
+          for (let i = 0; i < iovs_len; i++) {
+            const ptr = view().getUint32(iovs + i * 8, true);
+            const len = view().getUint32(iovs + i * 8 + 4, true);
+            const txt = new TextDecoder().decode(new Uint8Array(mem(), ptr, len));
+            fd === 1 ? console.log(txt) : console.warn(txt);
+            total += len;
+          }
+          view().setUint32(nwritten, total, true);
+          return 0;
+        },
+
+        fd_pwrite: (fd, iovs, iovs_len, offset, nwritten) => {
+          // Offset is ignored here as we are writing to console
+          return this.importObject.fd_write(fd, iovs, iovs_len, nwritten);
+        },
+
+        fd_read: () => 0,
+        fd_pread: () => 0,
+        fd_close: () => 0,
+        fd_seek: () => 28, // ENOTSUP
+        fd_tell: () => 28,
+        fd_sync: () => 0,
+        fd_datasync: () => 0,
+        fd_advise: () => 0,
+        fd_allocate: () => 28,
+
+        fd_fdstat_get: (fd, buf) => {
+          const v = view();
+          v.setUint8(buf, 1); // Filetype: Character Device
+          v.setUint16(buf + 2, 0, true); // Flags
+          v.setBigUint64(buf + 8, 0n, true); // Rights base
+          v.setBigUint64(buf + 16, 0n, true); // Rights inheriting
+          return 0;
+        },
+
+        fd_fdstat_set_flags: () => 0,
+        fd_filestat_get: () => 28,
+        fd_filestat_set_size: () => 28,
+        fd_filestat_set_times: () => 28,
+        fd_prestat_get: () => 8, // EBADF (No preopened dirs)
+        fd_prestat_dir_name: () => 8,
+        fd_readdir: () => 28,
+        fd_renumber: () => 28,
+
+        // --- Path Operations ---
+        path_open: () => 44, // ENOENT
+        path_create_directory: () => 28,
+        path_filestat_get: () => 44,
+        path_filestat_set_times: () => 28,
+        path_link: () => 28,
+        path_readlink: () => 44,
+        path_remove_directory: () => 28,
+        path_rename: () => 28,
+        path_symlink: () => 28,
+        path_unlink_file: () => 28,
+
+        // --- Networking ---
+        poll_oneoff: () => 28,
+        sock_recv: () => 28,
+        sock_send: () => 28,
+        sock_shutdown: () => 28,
+      };
+    }
+  }
+  const wasi_snapshot_preview1 = new GamaWASI().importObject;
 
 
   let p = {
@@ -337,14 +427,16 @@ const workerfn = () => {
     init: { width: 500, height: 500, title: "gama app" },
     last_t: Date.now(),
     mouse: {
-      x: 0, y: 0, mx: 0, my: 0,
+      x: 0, y: 0,
       down: false,
-      pressed: false,
     },
     keyboard: {
       down: [],
     },
   };
+  try {
+    window.p = p;
+  } catch (e) { } //DEBUG: remove this
 
   // Create a proxy to catch any missing WASI functions
   const gapi = {
@@ -420,17 +512,12 @@ const workerfn = () => {
         color: [r, g, b, a],
       });
     },
-    get_mouse_move: (x_ptr, y_ptr) => {
-      setDoublePtr(x_ptr, p.mouse.mx);
-      setDoublePtr(y_ptr, p.mouse.my);
-    },
     mouse_get: (x_ptr, y_ptr) => {
       setDoublePtr(x_ptr, p.mouse.x);
       setDoublePtr(y_ptr, p.mouse.y);
       return 0;
     },
     mouse_down: () => p.mouse.down ? 1 : 0,
-    mouse_pressed: () => p.mouse.pressed ? 1 : 0,
     yield: (dt_ptr) => {
       const now = Date.now();
       const dt = (now - p.last_t) / 1000;
@@ -451,7 +538,7 @@ const workerfn = () => {
       });
     },
     runs: () => p.running ? 1 : 0,
-    key_pressed: (t, k) => {
+    key_down: (t, k) => {
       return p.keyboard.down.includes(String.fromCodePoint(t, k)) ? 1 : 0;
     },
     wait_queue: () => { }
@@ -462,24 +549,17 @@ const workerfn = () => {
   function takeString(ptr) {
     if (!ptr || ptr === 0) return "";
 
-    // 1. Always get a fresh view of the buffer in case it was resized
     const buffer = p.instance.exports.memory.buffer;
     const view = new Uint8Array(buffer);
 
-    // 2. Find the null terminator
     let end = ptr;
-    // Limit the search to prevent infinite loops if C forgot a null terminator
     const maxSearch = 1024;
     while (view[end] !== 0 && (end - ptr) < maxSearch && end < view.length) {
       end++;
     }
 
-    // 3. THE FIX: Use .slice() instead of .subarray()
-    // .slice() creates a brand new byte array (a deep copy).
-    // .subarray() only creates a "view" (pointer) to the existing memory.
     const bytes = view.slice(ptr, end);
 
-    // 4. Decode the copied bytes into a JS string
     return utf8Decoder.decode(bytes);
   }
 
@@ -526,14 +606,10 @@ const workerfn = () => {
         if (event.data.type == 'event/mousemove') {
           p.mouse.x = event.data.position[0];
           p.mouse.y = event.data.position[1];
-          p.mouse.mx = event.data.movement[0];
-          p.mouse.my = event.data.movement[1];
         } else if (event.data.type == 'event/mousedown') {
           p.mouse.down = true;
-          p.mouse.pressed = true;
         } else if (event.data.type == 'event/mouseup') {
           p.mouse.down = false;
-
         } else if (event.data.type == 'event/keydown') {
           p.keyboard.down.push(event.data.key);
         } else if (event.data.type == 'event/keyup') {
@@ -545,9 +621,10 @@ const workerfn = () => {
     }
   };
   function postQueue() {
-    for (const msg of p.queue) {
-      self.postMessage(msg);
-    }
+    self.postMessage({
+      type: 'multiple',
+      commands: p.queue,
+    });
     p.queue = [];
   }
 
