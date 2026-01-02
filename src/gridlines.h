@@ -6,9 +6,9 @@ void draw_gridlines() {
   gmColor transparent_white = 0xFFFFFF99;
   gmColor more_transparent_white = 0xAAAAAA44;
   // x axis
-  gm_draw_line(-5, 0, 5, 0, 0.005, transparent_white);
-  for (double x = -5; x <= 5; x += 0.1) {
-    gm_draw_line(x, -5, x, 5, 0.01, more_transparent_white);
+  gm_draw_line(-2, 0, 2, 0, 0.005, transparent_white);
+  for (double x = -2; x <= 2; x += 0.1) {
+    gm_draw_line(x, -2, x, 2, 0.01, more_transparent_white);
     // draw indicator line
     int ishalf = (int)(x * 10) % 5 == 0;
     sprintf(label, "%.1lf", x);
