@@ -13,6 +13,7 @@ This project serves as both a mathematical playground and a showcase of low-leve
 - **Custom UI Components**: Includes interactive sliders for learning rate adjustment, toggle switches for autoplay, and an animated joystick for viewport navigation.
 - **Robust Math Engine**: Implements custom trigonometric and logarithmic functions from scratch, reducing dependency on external standard libraries.
 - **Deterministic Memory Management**: Utilizes a specialized memory pool and bookkeeping system to ensure stability and efficiency.
+- **Web build support**: lineupe is compatible with the latest Web build system offered by gama with gama.js
 
 ## Technologies Used
 | Technology | Purpose |
